@@ -9,7 +9,10 @@
 import datetime
 import json
 from collections import Counter
-
+from datetime import date
+from calculating_statistic_data import getdemo
+from calculating_statistic_data import upload_blob
+from calculating_statistic_data import make_blob_public
 
 def get_operators():
     """
@@ -45,18 +48,30 @@ def save_to_file(generator_ad_archives, args, is_verbose=False):
     """
     if len(args) != 1:
         raise Exception("save action requires exact 1 param: output file")
-    with open(args[0], "w+") as file:
+    today = date.today()
+    filename = str(today) + '.json'
+    with open(filename, "w+") as file:
         count = 0
         for ad_archives in generator_ad_archives:
             for data in ad_archives:
-                file.write(json.dumps(data))
+                file.write(json.dumps(data, ensure_ascii=False))
                 file.write("\n")
             count += len(ad_archives)
             if is_verbose:
                 print("Items wrote: %d" % count)
-
     print("Total number of ads wrote: %d" % count)
-
+    data = []
+    for line in open(filename, 'r'):
+        data.append(json.loads(line))
+    with open(filename,'w') as file:
+        json.dump(data,file)
+    print('Starting analaze')
+    getdemo(data, today)
+    #upload_blob('facebook_ads_opora', filename, 'fb_ads.json')
+    print('sleeping')
+    #make_blob_public('facebook_ads_opora', 'views.csv')
+    #make_blob_public('facebook_ads_opora', 'gender.csv')
+    #make_blob_public('facebook_ads_opora', 'fb_ads.json')
 
 def count_start_time_trending(generator_ad_archives, args, is_verbose=False):
     """
@@ -77,7 +92,7 @@ def count_start_time_trending(generator_ad_archives, args, is_verbose=False):
         start_dates = list(
             map(
                 lambda data: datetime.datetime.strptime(
-                    data["ad_delivery_start_time"], "%Y-%m-%dT%H:%M:%S%z"
+                    data["ad_delivery_start_time"], "%Y-%m-%d"
                 ).strftime("%Y-%m-%d"),
                 ad_archives,
             )

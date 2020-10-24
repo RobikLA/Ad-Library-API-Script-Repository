@@ -25,7 +25,7 @@ class FbAdsLibraryTraversal:
         + "fields={}&search_terms={}&ad_reached_countries={}&search_page_ids={}&"
         + "ad_active_status={}&limit={}"
     )
-    default_api_version = "v4.0"
+    default_api_version = "v7.0"
 
     def __init__(
         self,
@@ -34,7 +34,7 @@ class FbAdsLibraryTraversal:
         search_term,
         country,
         search_page_ids="",
-        ad_active_status="active",
+        ad_active_status="ALL",
         after_date="1970-01-01",
         page_limit=500,
         api_version=None,
@@ -101,8 +101,7 @@ class FbAdsLibraryTraversal:
             filtered = list(
                 filter(
                     lambda ad_archive: datetime.strptime(
-                        ad_archive["ad_delivery_start_time"], "%Y-%m-%dT%H:%M:%S%z"
-                    ).timestamp()
+                        ad_archive["ad_creation_time"], "%Y-%m-%d").timestamp()
                     >= start_time_cutoff_after,
                     response_data["data"],
                 )
